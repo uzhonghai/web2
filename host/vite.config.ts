@@ -10,7 +10,8 @@ export default defineConfig(({ mode }) => {
   const port = Number(env.VITE_HOST_PORT || 4173);
   const origin = env.VITE_HOST_ORIGIN || `http://localhost:${port}`;
   const base = env.VITE_HOST_BASE || '/';
-  
+  const sessionEntry = env.VITE_SESSION_ENTRY || 'http://localhost:4172/session.js';
+
   return {
     base,
     resolve: {
@@ -23,9 +24,19 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       federation({
         name: 'host_app',
-        // version-first 会在 Host 初始化时拉取所有 remoteEntry；改为 loaded-first 按需加载
+        // version-first 会在 Host 初始化时拉取所有 remoteEntry；loaded-first 为按需加载
         shareStrategy: 'loaded-first',
-        // 避免启动时预加载 remote 模块；remote 在运行时通过 registerRemotes 注册
+        // session 作为构建期已知的共享 remote，固定注册
+        remotes: {
+          session: {
+            type: 'module',
+            name: 'session',
+            entry: sessionEntry,
+            entryGlobalName: 'session',
+            shareScope: 'default',
+          },
+        },
+        // 避免启动时预加载 remote 模块；业务 remote 在运行时通过 registerRemotes 注册
         manifest: {
           disableAssetsAnalyze: true,
         },
@@ -37,6 +48,7 @@ export default defineConfig(({ mode }) => {
           'react-dom': { singleton: true },
           'react-router-dom': { singleton: true },
           antd: { singleton: true },
+          axios: { singleton: true },
         },
       }),
     ],

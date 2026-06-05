@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Layout, Menu, theme } from "antd";
+import type { ItemType } from "antd/es/menu/interface";
 import * as AntdIcons from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { RemoteAppConfig } from "@/config/remoteApps";
@@ -9,11 +10,13 @@ const { Sider, Content } = Layout;
 const { HomeOutlined, ApartmentOutlined } = AntdIcons;
 
 const renderIcon = (iconName: string): React.ReactNode => {
-  const iconCandidate = (AntdIcons as Record<string, unknown>)[iconName];
-  if (typeof iconCandidate !== "function") {
+  const Icon = (AntdIcons as unknown as Record<string, React.ComponentType>)[
+    iconName
+  ];
+  if (!Icon) {
     return <ApartmentOutlined />;
   }
-  return React.createElement(iconCandidate as React.ComponentType);
+  return <Icon />;
 };
 
 interface AppLayoutProps {
@@ -28,26 +31,53 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, remoteApps }) => {
   const { token } = theme.useToken();
 
   const menuItems = useMemo(() => {
-    const staticItems = [
-      { key: "/", icon: <HomeOutlined />, label: "首页", order: 0 },
+    const staticItems: ItemType[] = [
+      { key: "/", icon: <HomeOutlined />, label: "首页" },
     ];
 
-    const remoteItems = [...remoteApps]
+    const remoteItems: ItemType[] = [...remoteApps]
       .sort((a, b) => a.menuOrder - b.menuOrder)
-      .map((app) => ({
-        key: app.routePath,
-        icon: renderIcon(app.menuIcon),
-        label: app.menuLabel,
-        order: app.menuOrder,
-      }));
+      .map((app) => {
+        const subs = app.subMenuItems;
+        if (subs && subs.length > 0) {
+          return {
+            key: app.routePath,
+            icon: renderIcon(app.menuIcon),
+            label: app.menuLabel,
+            children: [...subs]
+              .sort((a, b) => a.order - b.order)
+              .map((sub) => ({
+                key: `${app.routePath}/${sub.key}`,
+                icon: renderIcon(sub.icon),
+                label: sub.label,
+              })),
+          };
+        }
+        return {
+          key: app.routePath,
+          icon: renderIcon(app.menuIcon),
+          label: app.menuLabel,
+        };
+      });
 
     return [...staticItems, ...remoteItems];
   }, [remoteApps]);
 
+  const openKeys = useMemo(() => {
+    for (const app of remoteApps) {
+      if (
+        app.subMenuItems?.length &&
+        location.pathname.startsWith(app.routePath)
+      ) {
+        return [app.routePath];
+      }
+    }
+    return [];
+  }, [remoteApps, location.pathname]);
+
   return (
     <Layout style={{ height: "100vh", overflow: "hidden" }}>
       <Sider
-        collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
         style={{
@@ -56,13 +86,10 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, remoteApps }) => {
           overflowY: "auto",
         }}
       >
-        <div className="flex justify-center items-center font-bold text-xl tracking-wider h-10 m-2 bg-gradient-to-r from-sky-300/40 to-indigo-200/40 text-slate-800 shadow-inner rounded-2xl">
-          智慧医院系统
-        </div>
-
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
+          defaultOpenKeys={openKeys}
           items={menuItems}
           onClick={({ key }) => navigate(key)}
           style={{ border: "none" }}

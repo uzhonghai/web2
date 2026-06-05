@@ -9,7 +9,7 @@ const Home: React.FC = () => {
       className="overflow-hidden shadow-sm text-center"
       style={{ marginBottom: 24 }}
     >
-      <Title level={3}>智慧医院系统0529-1</Title>
+      <Title level={3}>智慧医院系统0605-1</Title>
     </Card>
   );
 };

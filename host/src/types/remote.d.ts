@@ -1,21 +1,18 @@
-declare module 'remote_app/RemoteApp' {
+declare module 'system/system' {
   import React from 'react';
-  interface RemoteAppProps {
+  interface SystemProps {
     hostUser?: string;
     title?: string;
     embedded?: boolean;
   }
-  const RemoteApp: React.FC<RemoteAppProps>;
-  export default RemoteApp;
-}
+  const System: React.FC<SystemProps>;
+  export default System;
 
-declare module 'remote_app_2/RemoteApp2' {
-  import React from 'react';
-  interface RemoteApp2Props {
-    hostUser?: string;
-    title?: string;
-    embedded?: boolean;
+  interface SubMenuItem {
+    key: string;
+    label: string;
+    icon: string;
+    order: number;
   }
-  const RemoteApp2: React.FC<RemoteApp2Props>;
-  export default RemoteApp2;
+  export const menuConfig: SubMenuItem[];
 }

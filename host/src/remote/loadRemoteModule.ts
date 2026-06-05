@@ -4,10 +4,11 @@ import {
   getRemoteConfig,
   getRemoteNameFromModuleId,
 } from '@/config/remotes';
+import type { SubMenuItem } from '@/config/remoteApps';
 
 type RemoteModuleExport<TProps extends object> =
   | ComponentType<TProps>
-  | { default: ComponentType<TProps> };
+  | { default: ComponentType<TProps>; menuConfig?: SubMenuItem[] };
 
 const registeredRemotes = new Set<string>();
 
@@ -29,19 +30,23 @@ function ensureRemoteRegistered(moduleId: string): void {
 
 export async function loadRemoteModule<TProps extends object = object>(
   moduleId: string,
-): Promise<{ default: ComponentType<TProps> }> {
+): Promise<{ default: ComponentType<TProps>; menuConfig?: SubMenuItem[] }> {
   ensureRemoteRegistered(moduleId);
 
   const remoteModule = await loadRemote<RemoteModuleExport<TProps>>(moduleId);
 
-  const component =
-    typeof remoteModule === 'function'
-      ? remoteModule
-      : remoteModule?.default;
+  if (typeof remoteModule === 'function') {
+    return { default: remoteModule };
+  }
+
+  const component = remoteModule?.default;
 
   if (!component) {
     throw new Error(`Remote module "${moduleId}" has no default export`);
   }
 
-  return { default: component };
+  return {
+    default: component,
+    menuConfig: (remoteModule as Record<string, unknown>)?.menuConfig as SubMenuItem[] | undefined,
+  };
 }

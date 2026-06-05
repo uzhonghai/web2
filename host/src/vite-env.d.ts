@@ -5,8 +5,9 @@ interface ImportMetaEnv {
   readonly VITE_HOST_PORT?: string;
   readonly VITE_HOST_ORIGIN?: string;
   readonly VITE_HOST_BASE?: string;
-  readonly VITE_REMOTE_A_ENTRY?: string;
-  readonly VITE_REMOTE_A_ENTRY2?: string;
+  readonly VITE_LOGIN_ENTRY?: string;
+  readonly VITE_SYSTEM_ENTRY?: string;
+  readonly VITE_SESSION_ENTRY?: string;
 }
 
 interface ImportMeta {

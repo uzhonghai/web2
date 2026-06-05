@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { ConfigProvider, App as AntdApp, Spin } from "antd";
 import zhCN from "antd/locale/zh_CN";
-import { setMessageApi } from "@/utils/request";
+import { setMessageApi } from "session/request";
 import { fetchRemoteApps, type RemoteAppConfig } from "@/config/remoteApps";
 import { buildRemoteConfigs } from "@/config/remotes";
 import AppRouter from "@/router";
